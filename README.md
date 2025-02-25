@@ -37,7 +37,7 @@ git clone https://github.com/Laura-Gomez/workshop_resistencia.git
 
 ## Aprendiendo a usar Nextflow
 
-Muévete al directorio "workshop_resistencia/exercise_fastp
+Muévete al directorio *workshop_resistencia/exercise_fastp*
 
 ```
 cd workshop_resistencia/exercise_fastp
@@ -49,7 +49,7 @@ En este ejercicio ejecutaremos el comando fastp. Visualiza la ayuda de este prog
 fastp -h
 ```
 
-Los datos de secuenciación se encuentran en el directorio: /home/lgomez/workshop_resistencia/data
+Los datos de secuenciación se encuentran en el directorio */home/lgomez/workshop_resistencia/data*
 
 ```
 ls /home/lgomez/workshop_resistencia/data
@@ -67,15 +67,15 @@ fastp \
         --json fastp_alone/${sample}.json
 ```
 
-Ahora vamos a trasladar este comando a un flujo de trabajo con Nextflow, para esto necesitamos:
+Ahora vamos a trasladar este comando a un flujo de trabajo de Nextflow, para esto necesitamos:
 
-**Archivo main.nf**
+**1. Archivo main.nf**
 Contiene los pasos del flujo de trabajo, el orden de los módulos que se van a ejecutar
 
-**Archivo modules.nf**
+**2. Archivo modules.nf**
 Contiene las instrucciones específicas para cada módulo del flujo de trabajo
 
-**Archivo nextflow.config**
+**3. Archivo nextflow.config**
 Contiene los parámetros del flujo de trabajo
 
 ```
