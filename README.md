@@ -8,8 +8,9 @@ Para facilitar su implementación como parte de un flujo de trabajo estandarizad
 
 ## Conectándonos al servidor y preparando el directorio de trabajo
 
-Para usuarios MAC: Abre tu Terminal
-Para usuarios Windows: Abre el Subsistima de Linux en Windows o abre Mobaxterm
+**Para usuarios MAC:** Abre tu Terminal
+
+**Para usuarios Windows:** Abre el Subsistima de Linux en Windows o abre Mobaxterm
 
 
 Para conectarnos al servidor podemos usar el siguiente comando:
