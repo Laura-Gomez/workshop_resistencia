@@ -1,4 +1,4 @@
-# Taller ""Genómica aplicada para fortalecer la lucha contra las bacterias multirresistentes"
+# Taller "Genómica aplicada para fortalecer la lucha contra las bacterias multirresistentes"
 
 ## Objetivo
 
@@ -59,12 +59,12 @@ Tomando en cuenta que tenemos datos de secuenciación pareados, el comando fastp
 
 ```
 fastp \
-        --in1 ${reads[0]} \
-        --in2 ${reads[1]} \
-        --out1 fastp_alone/${sample}_R1.fastq.gz \
-        --out2 fastp_alone/${sample}_R2.fastq.gz \
-        --html fastp_alone/${sample}.html \
-        --json fastp_alone/${sample}.json
+        --in1 /home/lgomez/workshop_resistencia/data/YV01_S2_R1_001.fastq.gz \
+        --in2 /home/lgomez/workshop_resistencia/data/YV01_S2_R2_001.fastq.gz \
+        --out1 fastp_alone/YV01_R1.fastq.gz \
+        --out2 fastp_alone/YV01_R2.fastq.gz \
+        --html fastp_alone/YV01.html \
+        --json fastp_alone/YV01.json
 ```
 
 Ahora vamos a trasladar este comando a un flujo de trabajo de Nextflow, para esto necesitamos:
@@ -78,6 +78,7 @@ Contiene las instrucciones específicas para cada módulo del flujo de trabajo
 **3. Archivo nextflow.config**
 Contiene los parámetros del flujo de trabajo
 
+Visualiza el contenido de estos archivos:
 ```
 more main.nf
 more modules.nf
@@ -92,6 +93,64 @@ nextflow run main.nf
 
 ## Aprendiendo a conectar Nextflow y Docker
 
+Muévete al directorio *workshop_resistencia/exercise_fastp*
 
+```
+cd ../workshop_resistencia/exercise_fastp
+```
+
+En esta parte de la práctica usaremos el comando bwa para hacer un alineamiento con las lecturas procesadas
+
+Ve la ayuda del comando BWA
+
+```
+bwa -h
+```
+
+Este comando no está instalado en el servidor. Para ejecutarlo tenemos varias opciones, dos de las cuales son:
+
+1. Instalarlo [https://bio-bwa.sourceforge.net/]
+2. Usarlo a través de un contenedor de Docker
+
+¡Nextflow está preparado para recibir las indicaciones de cual contenedor usar para cada uno de los modulos!. Solo hay que agregar la información en la sección de configuración del módulo en cuestión de la siguiente manera:
+
+```
+container 'laugoro/resistance-workshop-inmegen:public'
+```
+
+Visualiza el archivo modules.nf en la carpeta del ejercicio. Identifica las principales diferencias con respecto al ejercicio anterior:
+
+1. Tiene dos procesos: fastp y bwa
+2. El segundo proceso llama a un contenedor de Docker
+
+```
+// Align against genome
+
+process bwa {
+  cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
+  publishDir params.out, mode:'copy'
+
+  input:
+  tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
+
+  output:
+  tuple val(sample), path("alignment/${sample}_1.bam"),
+                path("alignment/${sample}_1.bam.bai"), emit: bwa_out
+
+  script:
+  """
+
+  mkdir -p alignment
+
+  bwa mem  ${params.ref} \
+        ${fastp_data_R1} \
+        ${fastp_data_R2} \
+        -t 12 |
+  samtools sort -o alignment/${sample}_1.bam
+  samtools index alignment/${sample}_1.bam alignment/${sample}_1.bam.bai
+ """
+}
+```
 
 

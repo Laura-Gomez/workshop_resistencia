@@ -30,6 +30,7 @@ process fastp {
 
 process bwa {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
   publishDir params.out, mode:'copy'
 
   input:
