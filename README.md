@@ -58,6 +58,8 @@ ls /home/lgomez/workshop_resistencia/data
 Tomando en cuenta que tenemos datos de secuenciación pareados, el comando fastp se ejecutaría de la siguiente manera para la muestra XX:
 
 ```
+mkdir fastp_alone
+ 
 fastp \
         --in1 /home/lgomez/workshop_resistencia/data/YV01_S2_R1_001.fastq.gz \
         --in2 /home/lgomez/workshop_resistencia/data/YV01_S2_R2_001.fastq.gz \
@@ -112,11 +114,28 @@ Este comando no está instalado en el servidor. Para ejecutarlo tenemos varias o
 1. Instalarlo [https://bio-bwa.sourceforge.net/]
 2. Usarlo a través de un contenedor de Docker
 
-¡Nextflow está preparado para recibir las indicaciones de cual contenedor usar para cada uno de los modulos!. Solo hay que agregar la información en la sección de configuración del módulo en cuestión de la siguiente manera:
+¡Nextflow está preparado para recibir las indicaciones de cual contenedor usar para cada uno de los modulos!. Solo hay que descargar el Docker que nos interesa, agregar la información del contenedor a usar junto con los parámetros que requiera en la sección de configuración del módulo en cuestión y habilitar el uso de Docker en las opciones de configuración de Nextflow.
 
+Para descargar el docker que nos interesa
+```
+docker pull laugoro/resistance-workshop-inmegen:public
+```
+
+Para agregar la información en la sección de configuración del módulo, se debe agregar la siguiente línea en el archivo modules.nf en el proceso que requiere del docker
 ```
 container 'laugoro/resistance-workshop-inmegen:public'
+containerOptions "-v ${params.refdir}:/ref"
 ```
+
+Para habilitar el uso de Docker en las opciones de configuración de Nextflow, se deben agregar las siguientes líneas en el archivo nextflow.config
+```
+docker {
+    enabled = true
+    temp = 'auto'
+    fixOwnership = true
+}
+```
+
 
 Visualiza el archivo modules.nf en la carpeta del ejercicio. Identifica las principales diferencias con respecto al ejercicio anterior:
 
@@ -152,5 +171,20 @@ process bwa {
  """
 }
 ```
+
+¡Ahora si! Solo tienes que ejecutar el flujo de trabajo
+
+```
+nextflow run main.nf
+
+```
+
+
+## Flujo para la identificación de genes de resistencia
+
+### Calidad y ensamblado
+
+
+### Identificación de genes de resistencia
 
 
