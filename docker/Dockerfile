@@ -71,12 +71,13 @@ RUN apt-get update && \
         && \
     rm -rf /var/lib/apt/lists/*
 
+WORKDIR /usr/src
 
 #### Descargar e instalar FastQC
 RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
     unzip fastqc_v0.12.1.zip && \
     chmod a+x FastQC/fastqc && \
-    ln -s /FastQC/fastqc /usr/local/bin/fastqc && \
+    ln -s /usr/src/FastQC/fastqc /usr/local/bin/fastqc && \
     rm fastqc_v0.12.1.zip
 
 #### Descargar e instalar MultiQC
@@ -90,7 +91,7 @@ RUN wget https://github.com/lh3/bwa/releases/download/v0.7.17/bwa-0.7.17.tar.bz2
     tar -xjvf bwa-0.7.17.tar.bz2 && \
     cd bwa-0.7.17 && \
     make && \
-    ln -s /bwa-0.7.17/bwa /usr/local/bin/bwa && \
+    ln -s /usr/src/bwa-0.7.17/bwa /usr/local/bin/bwa && \
     cd .. && \
     rm bwa-0.7.17.tar.bz2
 
@@ -116,6 +117,18 @@ RUN wget http://opengene.org/fastp/fastp && \
     cp ./fastp /usr/local/bin/ && \
     chmod a+x /usr/local/bin/fastp && \
     ln -s /usr/local/bin/fastp /usr/bin/fastp
+
+#### Descargar e instalar SPADES
+RUN wget https://github.com/ablab/spades/releases/download/v4.0.0/SPAdes-4.0.0-Linux.tar.gz && \
+    tar -xzf SPAdes-4.0.0-Linux.tar.gz && \
+    rm SPAdes-4.0.0-Linux.tar.gz
+
+#### Descargar e instalar QUAST
+RUN wget https://downloads.sourceforge.net/project/quast/quast-5.3.0.tar.gz && \
+    tar -xzf quast-5.3.0.tar.gz && \
+    rm quast-5.3.0.tar.gz 
+
+ENV PATH="${PATH}:/usr/src/SPAdes-4.0.0-Linux/bin:/usr/src/quast-5.3.0"
 
 # Ejecutar 
 CMD ["/bin/bash"]
