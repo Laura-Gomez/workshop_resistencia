@@ -31,6 +31,7 @@ process fastp {
 process bwa {
   cache 'lenient'
   container 'laugoro/resistance-workshop-inmegen:public'
+  containerOptions "-v ${params.refdir}:/ref"
   publishDir params.out, mode:'copy'
 
   input:
@@ -45,7 +46,7 @@ process bwa {
 
   mkdir -p alignment
 
-  bwa mem  ${params.ref} \
+  bwa mem  /ref/${params.refname} \
         ${fastp_data_R1} \
         ${fastp_data_R2} \
         -t 12 |
