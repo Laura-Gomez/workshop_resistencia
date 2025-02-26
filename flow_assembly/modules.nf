@@ -81,6 +81,8 @@ process filterQual {
 
 process bwa_1 {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
+  containerOptions "-v ${params.refdir_8325}:/ref"
   publishDir params.out, mode:'copy'
 
   input:
@@ -95,7 +97,7 @@ process bwa_1 {
 
   mkdir -p alignment
 
-  bwa mem  ${params.ref_8325} \
+  bwa mem  /ref/${params.refname_8325} \
         ${fastp_data_R1} \
         ${fastp_data_R2} \
 	-t 12 |
@@ -106,6 +108,8 @@ process bwa_1 {
 
 process bwa_2 {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
+  containerOptions "-v ${params.refdir_N315}:/ref"
   publishDir params.out, mode:'copy'
 
   input:
@@ -120,7 +124,7 @@ process bwa_2 {
 
   mkdir -p alignment
 
-  bwa mem  ${params.ref_N315} \
+  bwa mem  /ref/${params.refname_N315} \
         ${fastp_data_R1} \
         ${fastp_data_R2} \
         -t 12 |
@@ -131,6 +135,8 @@ process bwa_2 {
 
 process bwa_3 {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
+  containerOptions "-v ${params.refdir_CA12}:/ref"
   publishDir params.out, mode:'copy'
 
   input:
@@ -145,7 +151,7 @@ process bwa_3 {
 
   mkdir -p alignment
 
-  bwa mem  ${params.ref_CA12} \
+  bwa mem  /ref/${params.refname_CA12} \
         ${fastp_data_R1} \
         ${fastp_data_R2} \
         -t 12 |
@@ -159,6 +165,7 @@ process bwa_3 {
 
 process mosdepth {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -182,6 +189,7 @@ process mosdepth {
 
 process spades {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -218,6 +226,8 @@ process spades {
 // Assemble comparison
 process quast_1 {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
+  containerOptions "-v ${params.refdir_8325}:/ref"
   publishDir params.out, mode:'copy'
 
   input:
@@ -236,8 +246,8 @@ process quast_1 {
   cp ${spades_scaffold} \${FILE2}
 
   quast.py \${FILE1} \${FILE2} \
-	-r ${params.ref_8325} \
-	-g ${params.gff_8325} \
+	-r /ref/${params.refname_8325} \
+	-g /ref/${params.gff_8325} \
 	-o quast/${sample}_8325
   """
 }
@@ -246,6 +256,8 @@ process quast_1 {
 // Assemble comparison
 process quast_2 {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
+  containerOptions "-v ${params.refdir_N315}:/ref"
   publishDir params.out, mode:'copy'
 
   input:
@@ -263,8 +275,8 @@ process quast_2 {
   cp ${spades_scaffold_bacterial} \${FILE1}
   cp ${spades_scaffold} \${FILE2}
   quast.py \${FILE1} \${FILE2} \
-        -r ${params.ref_N315} \
-        -g ${params.gff_N315} \
+        -r /ref/${params.refnameN315} \
+        -g /ref/${params.gff_N315} \
         -o quast/${sample}_N315
   """
 }
@@ -273,6 +285,8 @@ process quast_2 {
 // Assemble comparison
 process quast_3 {
   cache 'lenient'
+  container 'laugoro/resistance-workshop-inmegen:public'
+  containerOptions "-v ${params.refdir_CA12}:/ref"
   publishDir params.out, mode:'copy'
 
   input:
@@ -290,289 +304,11 @@ process quast_3 {
   cp ${spades_scaffold_bacterial} \${FILE1}
   cp ${spades_scaffold} \${FILE2}
   quast.py \${FILE1} \${FILE2} \
-        -r ${params.ref_CA12} \
+        -r ${params.refname_CA12} \
         -g ${params.gff_CA12} \
         -o quast/${sample}_CA12
   """
 }
-
-
-
-// Antibiotic resistence
-
-process resfinder {
-  conda '/scratch/home/lgomez/miniconda3/envs/resfinder'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
-
-  output:
-  tuple path("resfinder_results/${sample}/pheno_table.txt"), path("resfinder_results/${sample}/ResFinder_results.txt"), path("resfinder_results/${sample}/ResFinder_results_tab.txt"),     emit: resfinder_out
-  tuple path("resfinder_results_bacterial/${sample}/pheno_table.txt"), path("resfinder_results_bacterial/${sample}/ResFinder_results.txt"), path("resfinder_results_bacterial/${sample}/ResFinder_results_tab.txt"),     emit: resfinder_bacterial_out
-  val(sample), emit: resfinder_sample_out
-
-  script:
-  """
-  mkdir -p resfinder_results/${sample}
-  mkdir -p resfinder_results_bacterial/${sample}
-
-  python -m resfinder \
-	--db_path_res ${params.db_res} \
-	-o resfinder_results/${sample} \
-	-l 0.6 -t 0.8 --acquired \
-	-ifa ${spades_scaffold}
-
- python -m resfinder \
-	--db_path_res ${params.db_res} \
-        -o resfinder_results_bacterial/${sample} \
-        -l 0.6 -t 0.8 --acquired \
-        -ifa ${spades_scaffold_bacterial}
- """
-}
-
-
-// Antibiotic resistence
-
-process resfinderfq {
-  conda '/scratch/home/lgomez/miniconda3/envs/resfinder'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
-
-  output:
-  tuple path("resfinderfq_results/${sample}/pheno_table.txt"), path("resfinderfq_results/${sample}/ResFinder_results.txt"), path("resfinderfq_results/${sample}/ResFinder_results_tab.txt"),     emit: resfinder_out
-  val(sample), emit: resfinder_sample_out
-
-  script:
-  """
-  mkdir -p resfinderfq_results/${sample}
-
-  python -m resfinder \
-        --db_path_res ${params.db_res} \
-        -o resfinderfq_results/${sample} \
-        -l 0.6 -t 0.8 --acquired \
-        -ifq ${fastp_data_R1} ${fastp_data_R2}
- """
-}
-
-
-// Run Virulence Finder
-
-process virulencefinder {
-  conda '/scratch/home/lgomez/miniconda3/envs/virfind'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
-
-  output:
-  tuple val(sample), path("virulence/${sample}/results.txt"),
-		path("virulence/${sample}/results_tab.tsv"),    emit: virfinder_out
-
-
-  script:
-  """
-  mkdir -p virulence/${sample}
-
-  virulencefinder.py \
-	-i ${spades_scaffold_bacterial} \
-	-p ${params.db_vir} \
-	-o virulence/${sample} \
-	--mincov 0.6 -t 0.9 \
-	-x
-
- """
-
-}
-
-
-// Run Virulence Finder FROM FASTQ
-
-process virulencefinderfq {
-  conda '/scratch/home/lgomez/miniconda3/envs/virfind'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
-
-
-  output:
-  tuple val(sample), path("virulence_fastq/${sample}/results.txt"),
-                path("virulence_fastq/${sample}/results_tab.tsv"),    emit: virfinder_out
-
-
-  script:
-  """
-  mkdir -p virulence_fastq/${sample}
-
-  virulencefinder.py \
-        -i ${fastp_data_R1} ${fastp_data_R2} \
-        -p ${params.db_vir} \
-        -o virulence_fastq/${sample} \
-        --mincov 0.6 -t 0.9 \
-        -x
-
- """
-
-}
-
-
-// Resistance Gene Identifier (RGI) software 
-
-process rgi {
-  conda '/scratch/home/lgomez/miniconda3/envs/rgi'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
-
-
-  output:
-  tuple val(sample), path("virulence_rgi/${sample}/results.txt"), emit: rgi_out
-
-
-  script:
-  """
-  mkdir -p virulence_rgi/${sample}
-
-  rgi load --card_json ${params.card_db} --local
-
-  rgi main \
-	--input_sequence ${spades_scaffold_bacterial}  \
-	--output_file virulence_rgi/${sample}/results \
-	--local \
-	--low_quality
- """
-
-}
-
-
-// SCCMEC
-process sccmec {
-  conda '/scratch/home/lgomez/miniconda3/envs/sccmec'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
-
-  output:
-  tuple val(sample), path("sccmec/${sample}/sccmec.regions.blastn.tsv"),
-		path("sccmec/${sample}/sccmec.regions.details.tsv"), 
-		path("sccmec/${sample}/sccmec.targets.blastn.tsv"),
-		path("sccmec/${sample}/sccmec.targets.details.tsv"),
-		path("sccmec/${sample}/sccmec.tsv"), emit: sccmec_out
-
-
-  script:
-  """
-  mkdir -p sccmec/${sample}
-  sccmec --input ${spades_scaffold} --outdir sccmec/${sample}/
-  
-  """
-
-}
-
-
-
-// GENE ANNOTATION
-process prokka {
-conda '/scratch/home/lgomez/miniconda3/envs/resfam'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
-
-  output:
-  tuple val(sample), path("prokka/${sample}/genome_annotation.faa"), 
-		path("prokka/${sample}/genome_annotation.log"), emit: prokaa_faa
-
-  script:
-  """
-  prokka --outdir prokka/${sample} --prefix genome_annotation ${spades_scaffold} 
-  """
-
-}
-
-// HIDDEN MARKOV MODELS SCAN
-process hmmscan {
-  conda '/scratch/home/lgomez/miniconda3/envs/resfam'
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(prokka_faa), path(prokka_log)
-
-  output:
-  tuple val(sample), path("hmmscan/${sample}_table.txt"), emit: hmmscan_out
-
-  script:
-  """
-  mkdir -p hmmscan/
-  hmmscan -o hmmscan/${sample}.report --cpu ${params.ncrs} --tblout hmmscan/${sample}_table.txt ${params.resfam} ${prokka_faa}
-
-  """
-}
-
-// META-MARC
-process mmarc {
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-  
-  input:
-  tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
-  
-  output:
-  tuple val(sample), path("mmarc/${sample}.tblout.scan"), emit: mmarc_out
-  
-  script:
-  """
-  mkdir -p mmarc/
-  /scratch/home/lgomez/meta-marc/bin/mmarc \
-	--i1 ${fastp_data_R1} \
-	--i2 ${fastp_data_R2} \
-	-o mmarc -f ${sample} \
-	-d -l 3 -m -t ${params.ncrs}
- 
-  """
-}
-
-
-// AMR-plus-plus
-process amrpp {
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
-
-  output:
-  tuple val(sample), path("mmarc/${sample}.tblout.scan"), emit: mmarc_out
-
-  script:
-  """
-  nextflow run main_AMR++.nf -profile conda
-
-  mkdir -p mmarc/
-
-  /scratch/home/lgomez/meta-marc/bin/mmarc \
-        --i1 ${fastp_data_R1} \
-        --i2 ${fastp_data_R2} \
-        -o mmarc -f ${sample} \
-        -d -l 3 -m -t ${params.ncrs}
-
-  """
-}
-
-
 
 // Quality analysis FASTQ
 
