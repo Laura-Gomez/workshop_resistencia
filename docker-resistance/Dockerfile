@@ -50,8 +50,11 @@ RUN pip3 install -r /opt/rgi/requirements.txt
 RUN cd /opt/rgi && python3 setup.py install
 
 # Instalar sccmec
-RUN git clone https://github.com/egonozer/sccmec.git /opt/sccmec
-RUN pip3 install biopython
+#RUN wget https://ruta/al/codigo/fuente/sccmec.tar.gz -O /opt/sccmec.tar.gz \
+#     && tar -xzf /opt/sccmec.tar.gz -C /opt/ \
+#     && pip3 install /opt/sccmec  
+
+
 
 # Establecer el directorio de trabajo
 WORKDIR /workspace

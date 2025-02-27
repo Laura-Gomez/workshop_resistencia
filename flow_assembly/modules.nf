@@ -89,20 +89,20 @@ process bwa_1 {
   tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
 
   output:
-  tuple val(sample), path("alignment/${sample}_1.bam"), 
-		path("alignment/${sample}_1.bam.bai"), emit: bwa_out
+  tuple val(sample), path("bwa/${sample}_1.bam"), 
+		path("bwa/${sample}_1.bam.bai"), emit: bwa_out
 
   script:
   """
 
-  mkdir -p alignment
+  mkdir -p bwa
 
   bwa mem  /ref/${params.refname_8325} \
         ${fastp_data_R1} \
         ${fastp_data_R2} \
 	-t 12 |
-  samtools sort -o alignment/${sample}_1.bam
-  samtools index alignment/${sample}_1.bam alignment/${sample}_1.bam.bai
+  samtools sort -o bwa/${sample}_1.bam
+  samtools index bwa/${sample}_1.bam bwa/${sample}_1.bam.bai
  """
 }
 
@@ -116,20 +116,20 @@ process bwa_2 {
   tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
 
   output:
-  tuple val(sample), path("alignment/${sample}_2.bam"),
-		path("alignment/${sample}_2.bam.bai"), emit: bwa_out
+  tuple val(sample), path("bwa/${sample}_2.bam"),
+		path("bwa/${sample}_2.bam.bai"), emit: bwa_out
 
   script:
   """
 
-  mkdir -p alignment
+  mkdir -p bwa
 
   bwa mem  /ref/${params.refname_N315} \
         ${fastp_data_R1} \
         ${fastp_data_R2} \
         -t 12 |
-  samtools sort -o alignment/${sample}_2.bam
-  samtools index alignment/${sample}_2.bam alignment/${sample}_2.bam.bai
+  samtools sort -o bwa/${sample}_2.bam
+  samtools index bwa/${sample}_2.bam bwa/${sample}_2.bam.bai
  """
 }
 
@@ -143,20 +143,20 @@ process bwa_3 {
   tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
 
   output:
-  tuple val(sample), path("alignment/${sample}_3.bam"), 
-		path("alignment/${sample}_3.bam.bai"), emit: bwa_out
+  tuple val(sample), path("bwa/${sample}_3.bam"), 
+		path("bwa/${sample}_3.bam.bai"), emit: bwa_out
 
   script:
   """
 
-  mkdir -p alignment
+  mkdir -p bwa
 
   bwa mem  /ref/${params.refname_CA12} \
         ${fastp_data_R1} \
         ${fastp_data_R2} \
         -t 12 |
-  samtools sort -o alignment/${sample}_3.bam
-  samtools index alignment/${sample}_3.bam alignment/${sample}_3.bam.bai
+  samtools sort -o bwa/${sample}_3.bam
+  samtools index bwa/${sample}_3.bam bwa/${sample}_3.bam.bai
  """
 }
 
@@ -196,28 +196,20 @@ process spades {
   tuple val(sample), path(fastp_data_R1), path(fastp_data_R2)
 
   output:
-  tuple val(sample), path("spades_scaffolds/${sample}_scaffolds.fasta"),\
-         path("spades_scaffolds/${sample}_bacterial_scaffolds.fasta"),	emit: spades_out
+  tuple val(sample), path("spades/${sample}_scaffolds.fasta"), emit: spades_out
 
   script:
   """
 
   mkdir -p spades
-  mkdir -p spades_bacterial
-  mkdir -p spades_scaffolds
-
- spades.py \
-	-1 ${fastp_data_R1} \
-	-2 ${fastp_data_R2} \
-	-o spades
-  cp spades/scaffolds.fasta spades_scaffolds/${sample}_scaffolds.fasta
-
+  
   spades.py \
 	--isolate \
         -1 ${fastp_data_R1} \
         -2 ${fastp_data_R2} \
-        -o spades_bacterial
-  cp spades_bacterial/scaffolds.fasta spades_scaffolds/${sample}_bacterial_scaffolds.fasta
+        -o spades
+
+ cp spades/scaffolds.fasta spades/${sample}_scaffolds.fasta
 
  """
 }
@@ -231,21 +223,19 @@ process quast_1 {
   publishDir params.out, mode:'copy'
 
   input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
+  tuple val(sample), path(spades_scaffold)
 
   output:
   tuple path("quast/${sample}_8325/report.html"),  path("quast/${sample}_8325/report.tsv"),   emit: align_out
 
   script:
   """
-  mkdir -p quast/${sample}
+  mkdir -p quast/${sample}_8325
   
-  FILE1=\$(echo ${spades_scaffold_bacterial} | sed s/fasta/_8325.fasta/)
-  FILE2=\$(echo ${spades_scaffold} | sed s/fasta/_8325.fasta/)
-  cp ${spades_scaffold_bacterial} \${FILE1}
-  cp ${spades_scaffold} \${FILE2}
+  FILE2=\$(echo ${spades_scaffold} | sed s/.fasta/_8325.fasta/)
+  cp -r ${spades_scaffold} \${FILE2}
 
-  quast.py \${FILE1} \${FILE2} \
+  quast.py \${FILE2} \
 	-r /ref/${params.refname_8325} \
 	-g /ref/${params.gff_8325} \
 	-o quast/${sample}_8325
@@ -261,20 +251,18 @@ process quast_2 {
   publishDir params.out, mode:'copy'
 
   input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
+  tuple val(sample), path(spades_scaffold)
 
   output:
   tuple path("quast/${sample}_N315/report.html"),  path("quast/${sample}_N315/report.tsv"),   emit: align_out
 
   script:
   """
-  mkdir -p quast/${sample}
+  mkdir -p quast/${sample}_N315
 
-  FILE1=\$(echo ${spades_scaffold_bacterial} | sed s/fasta/_N315.fasta/)
-  FILE2=\$(echo ${spades_scaffold} | sed s/fasta/_N315.fasta/)
-  cp ${spades_scaffold_bacterial} \${FILE1}
-  cp ${spades_scaffold} \${FILE2}
-  quast.py \${FILE1} \${FILE2} \
+  FILE2=\$(echo ${spades_scaffold} | sed s/.fasta/_N315.fasta/)
+  cp -r ${spades_scaffold} \${FILE2}
+  quast.py \${FILE2} \
         -r /ref/${params.refname_N315} \
         -g /ref/${params.gff_N315} \
         -o quast/${sample}_N315
@@ -290,20 +278,18 @@ process quast_3 {
   publishDir params.out, mode:'copy'
 
   input:
-  tuple val(sample), path(spades_scaffold_bacterial), path(spades_scaffold)
+  tuple val(sample), path(spades_scaffold)
 
   output:
   tuple path("quast/${sample}_CA12/report.html"),  path("quast/${sample}_CA12/report.tsv"),   emit: align_out
 
   script:
   """
-  mkdir -p quast/${sample}
+  mkdir -p quast/${sample}_CA12
 
-  FILE1=\$(echo ${spades_scaffold_bacterial} | sed s/fasta/_CA12.fasta/)
-  FILE2=\$(echo ${spades_scaffold} | sed s/fasta/_CA12.fasta/)
-  cp ${spades_scaffold_bacterial} \${FILE1}
-  cp ${spades_scaffold} \${FILE2}
-  quast.py \${FILE1} \${FILE2} \
+  FILE2=\$(echo ${spades_scaffold} | sed s/.fasta/_CA12.fasta/)
+  cp -r ${spades_scaffold} \${FILE2}
+  quast.py \${FILE2} \
         -r /ref/${params.refname_CA12} \
         -g /ref/${params.gff_CA12} \
         -o quast/${sample}_CA12
