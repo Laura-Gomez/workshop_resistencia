@@ -275,7 +275,7 @@ process quast_2 {
   cp ${spades_scaffold_bacterial} \${FILE1}
   cp ${spades_scaffold} \${FILE2}
   quast.py \${FILE1} \${FILE2} \
-        -r /ref/${params.refnameN315} \
+        -r /ref/${params.refname_N315} \
         -g /ref/${params.gff_N315} \
         -o quast/${sample}_N315
   """
@@ -304,8 +304,8 @@ process quast_3 {
   cp ${spades_scaffold_bacterial} \${FILE1}
   cp ${spades_scaffold} \${FILE2}
   quast.py \${FILE1} \${FILE2} \
-        -r ${params.refname_CA12} \
-        -g ${params.gff_CA12} \
+        -r /ref/${params.refname_CA12} \
+        -g /ref/${params.gff_CA12} \
         -o quast/${sample}_CA12
   """
 }

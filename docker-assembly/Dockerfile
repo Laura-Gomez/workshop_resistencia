@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND="noninteractive"
 
 LABEL maintainer="Taller resistencia-INMEGEN"
 LABEL version="1.0"
@@ -26,7 +26,8 @@ RUN apt-get update && \
         hmmer \
         openjdk-8-jdk \
         openjdk-11-jdk \
-        libbz2-dev \
+        libboost-all-dev \
+	libbz2-dev \
         liblzma-dev \
         libncurses5-dev \
         libncursesw5-dev \
@@ -53,14 +54,10 @@ RUN apt-get update && \
         perl \
         pigz \
         pkg-config \
-        python3-dev \
-        python3-numpy \
-        python3-setuptools \
-        python3-pip \
-        rna-star \
+	tar gzip bzip2 \
+        python3-dev python3-setuptools python3-pip python3-virtualenv \
         software-properties-common \
         tabix \
-        tar \
         tzdata \
         unzip \
         vim \
@@ -69,6 +66,7 @@ RUN apt-get update && \
         zlib1g \
         zlib1g-dev \
         && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src
@@ -124,11 +122,13 @@ RUN wget https://github.com/ablab/spades/releases/download/v4.0.0/SPAdes-4.0.0-L
     rm SPAdes-4.0.0-Linux.tar.gz
 
 #### Descargar e instalar QUAST
-RUN wget https://downloads.sourceforge.net/project/quast/quast-5.3.0.tar.gz && \
+RUN  wget https://github.com/ablab/quast/releases/download/quast_5.3.0/quast-5.3.0.tar.gz && \
     tar -xzf quast-5.3.0.tar.gz && \
-    rm quast-5.3.0.tar.gz 
+    cd quast-5.3.0 && \
+    ./setup.py install
+ 
 
-ENV PATH="${PATH}:/usr/src/SPAdes-4.0.0-Linux/bin:/usr/src/quast-5.3.0"
+ENV PATH="${PATH}:/usr/src/SPAdes-4.0.0-Linux/bin:"
 
 # Ejecutar 
 CMD ["/bin/bash"]
