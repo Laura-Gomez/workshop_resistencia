@@ -1,8 +1,9 @@
 // Antibiotic resistence
 
 process resfinder {
-  conda '/scratch/home/lgomez/miniconda3/envs/resfinder'
   cache 'lenient'
+  container 'laugoro/resistance:public'
+  containerOptions "-v ${params.db_res}:/resfinder_db"
   publishDir params.out, mode:'copy'
 
   input:
@@ -16,8 +17,8 @@ process resfinder {
   """
   mkdir -p resfinder_results/${sample}
 
-  python -m resfinder \
-	--db_path_res ${params.db_res} \
+  resfinder \
+	--db_path_res /resfinder_db \
 	-o resfinder_results/${sample} \
 	-l 0.6 -t 0.8 --acquired \
 	-ifa ${fasta_genome}
@@ -28,8 +29,9 @@ process resfinder {
 // Antibiotic resistence
 
 process resfinderfq {
-  conda '/scratch/home/lgomez/miniconda3/envs/resfinder'
   cache 'lenient'
+  container 'laugoro/resistance:public'
+  containerOptions "-v ${params.db_res}:/resfinder_db"
   publishDir params.out, mode:'copy'
 
   input:
@@ -43,8 +45,8 @@ process resfinderfq {
   """
   mkdir -p resfinderfq_results/${sample}
 
-  python -m resfinder \
-        --db_path_res ${params.db_res} \
+  resfinder \
+        --db_path_res /resfinder_db \
         -o resfinderfq_results/${sample} \
         -l 0.6 -t 0.8 --acquired \
         -ifq ${fastp_reads[0]} ${fastp_reads[1]}
@@ -55,8 +57,9 @@ process resfinderfq {
 // Run Virulence Finder
 
 process virulencefinder {
-  conda '/scratch/home/lgomez/miniconda3/envs/virfind'
   cache 'lenient'
+  container 'laugoro/resistance:public'
+  containerOptions "-v ${params.db_vir}:/virfinder_db"
   publishDir params.out, mode:'copy'
 
   input:
@@ -73,7 +76,7 @@ process virulencefinder {
 
   virulencefinder.py \
 	-i ${fasta_genome} \
-	-p ${params.db_vir} \
+	-p /virfinder_db \
 	-o virulence/${sample} \
 	--mincov 0.6 -t 0.9 \
 	-x
@@ -86,8 +89,9 @@ process virulencefinder {
 // Run Virulence Finder FROM FASTQ
 
 process virulencefinderfq {
-  conda '/scratch/home/lgomez/miniconda3/envs/virfind'
   cache 'lenient'
+  container 'laugoro/resistance:public'
+  containerOptions "-v ${params.db_vir}:/virfinder_db"
   publishDir params.out, mode:'copy'
 
   input:
@@ -105,7 +109,7 @@ process virulencefinderfq {
 
   virulencefinder.py \
         -i ${fastp_reads[0]} ${fastp_reads[1]} \
-        -p ${params.db_vir} \
+        -p /virfinder_db \
         -o virulence_fastq/${sample} \
         --mincov 0.6 -t 0.9 \
         -x
@@ -118,8 +122,8 @@ process virulencefinderfq {
 // Resistance Gene Identifier (RGI) software 
 
 process rgi {
-  conda '/scratch/home/lgomez/miniconda3/envs/rgi'
   cache 'lenient'
+  container 'laugoro/resistance:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -148,8 +152,8 @@ process rgi {
 
 // SCCMEC
 process sccmec {
-  conda '/scratch/home/lgomez/miniconda3/envs/sccmec'
   cache 'lenient'
+  container 'laugoro/resistance:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -176,8 +180,8 @@ process sccmec {
 
 // GENE ANNOTATION
 process prokka {
-conda '/scratch/home/lgomez/miniconda3/envs/resfam'
   cache 'lenient'
+  container 'laugoro/resistance:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -196,8 +200,9 @@ conda '/scratch/home/lgomez/miniconda3/envs/resfam'
 
 // HIDDEN MARKOV MODELS SCAN
 process hmmscan {
-  conda '/scratch/home/lgomez/miniconda3/envs/resfam'
   cache 'lenient'
+  container 'laugoro/resistance:public'
+  containerOptions "-v ${params.resfam_dir}:/resfam"
   publishDir params.out, mode:'copy'
 
   input:
@@ -209,62 +214,10 @@ process hmmscan {
   script:
   """
   mkdir -p hmmscan/
-  hmmscan -o hmmscan/${sample}.report --cpu ${params.ncrs} --tblout hmmscan/${sample}_table.txt ${params.resfam} ${prokka_faa}
+  hmmscan -o hmmscan/${sample}.report --cpu ${params.ncrs} --tblout hmmscan/${sample}_table.txt /resfam/${params.resfam_name} ${prokka_faa}
 
   """
 }
-
-// META-MARC
-process mmarc {
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-  
-  input:
-  tuple val(sample), path(fastp_reads)
-  
-  output:
-  tuple val(sample), path("mmarc/${sample}.tblout.scan"), emit: mmarc_out
-  
-  script:
-  """
-  mkdir -p mmarc/
-  /scratch/home/lgomez/meta-marc/bin/mmarc \
-	--i1 ${fastp_reads[0]} \
-	--i2 ${fastp_reads[1]} \
-	-o mmarc -f ${sample} \
-	-d -l 3 -m -t ${params.ncrs}
- 
-  """
-}
-
-
-// AMR-plus-plus
-process amrpp {
-  cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-  input:
-  tuple val(sample), path(fastp_reads)
-
-  output:
-  tuple val(sample), path("mmarc/${sample}.tblout.scan"), emit: mmarc_out
-
-  script:
-  """
-  nextflow run main_AMR++.nf -profile conda
-
-  mkdir -p mmarc/
-
-  /scratch/home/lgomez/meta-marc/bin/mmarc \
-        --i1 ${fastp_reads[0]} \
-        --i2 ${fastp_reads[1]} \
-        -o mmarc -f ${sample} \
-        -d -l 3 -m -t ${params.ncrs}
-
-  """
-}
-
-
 
 // Quality analysis FASTQ
 

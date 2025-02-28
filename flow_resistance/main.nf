@@ -10,7 +10,6 @@ include { resfinder;
 	  sccmec;
 	  prokka;
 	  hmmscan;
-	  mmarc
  	} from "./modules.nf"	
 
 
@@ -27,9 +26,8 @@ workflow {
    resfinderfq(fastqs_dataset)
    virulencefinder(fastas_dataset)
    virulencefinderfq(fastqs_dataset)
-   rgi(fastas_dataset)
+//   rgi(fastas_dataset)
    sccmec(fastas_dataset)
    prokka(fastas_dataset)
    hmmscan(prokka.out.prokaa_faa)
-   mmarc(fastqs_dataset)
 }
