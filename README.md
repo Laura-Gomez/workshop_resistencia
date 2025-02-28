@@ -184,6 +184,25 @@ nextflow run main.nf
 
 ### Calidad y ensamblado
 
+Este flujo de trabajo realiza los siguientes análisis:
+1. Verifica que los archivos iniciales no estén dañados [gzip -t]
+2. Elimina los adaptadores y bases de baja calidad en los extremos de las lecturas, elimina las lecturas de baja calidad, las lectruas cortas [fastp]
+3. Verifica que aún existan lecturas 
+4. Alinea contra varios genomas de referencia [bwa]
+5. Obtiene métricas de profundidad y cobertura [mosdepth]
+6. Realiza un ensamble *de novo* [spades -isolate]
+7. Compara los ensambles contra los genomas de referencia conocidos
+8. Genera reportes de calidad
+
+Para ejecutar este flujo de trabajo, posiciónate en la carpeta *flow_assembly* y ejecuta el flujo de Nextflow
+
+```
+cd ../flow_assembly
+nextflow run main.nf
+
+```
+
+Analiza el reporte de calidad ubicado e la carpeta *out/multiqc/*
 
 ### Identificación de genes de resistencia
 
