@@ -202,8 +202,23 @@ nextflow run main.nf
 
 ```
 
-Analiza el reporte de calidad ubicado e la carpeta *out/multiqc/*
+Analiza el reporte de calidad ubicado en la carpeta *out/multiqc/*
 
 ### Identificación de genes de resistencia
 
+Este flujo de trabajo realiza los siguientes análisis:
+1. Identificación de genes de resistencia a antibióticos basado en secuencia [resfinder]
+2. Identificación de factores de virulencia [virulencefinder]
+3. Tipificación de elementosi genéticos móbiles SCCmec [SCCmecFinder]
+4. Anotación del ensamble (gtf, faa y fna de los features identificados) [prokka]
+5. Búsqueda de proteínas de resistencia a antibióticos basado en perfiles HMM [hmmscan]
 
+Para ejecutar este flujo de trabajo, posiciónate en la carpeta *flow_assembly* y ejecuta el flujo de Nextflow
+
+```
+cd ../flow_resistance
+nextflow run main.nf
+
+```
+
+Analiza los resultados ubicados en la carpeta *out/*
