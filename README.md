@@ -16,7 +16,7 @@ Para facilitar su implementación como parte de un flujo de trabajo estandarizad
 Para conectarnos al servidor podemos usar el siguiente comando:
 
 ```
-ssh alumnoN@10.0.15.11
+ssh alumnoN@IP
 ```
 
 Después de ingresar el comando anterior, teclea tu contraseña. **IMPORTANTE**: No verás nada en pantalla mientras ingresas la contraseña, aún así la contraseña se está escribiendo.
@@ -123,7 +123,7 @@ docker pull laugoro/resistance-workshop-inmegen:public
 
 Para agregar la información en la sección de configuración del módulo, se debe agregar la siguiente línea en el archivo modules.nf en el proceso que requiere del docker
 ```
-container 'laugoro/resistance-workshop-inmegen:public'
+container 'laugoro/workshop-inmegen-resistance:public'
 containerOptions "-v ${params.refdir}:/ref"
 ```
 
@@ -147,7 +147,7 @@ Visualiza el archivo modules.nf en la carpeta del ejercicio. Identifica las prin
 
 process bwa {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   publishDir params.out, mode:'copy'
 
   input:
