@@ -25,6 +25,7 @@ process validInput {
 // Remove adapters
 process fastp {
   cache 'lenient'
+  container 'laugoro/workshop-inmegen-assembly:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -81,7 +82,7 @@ process filterQual {
 
 process bwa_1 {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   containerOptions "-v ${params.refdir_8325}:/ref"
   publishDir params.out, mode:'copy'
 
@@ -108,7 +109,7 @@ process bwa_1 {
 
 process bwa_2 {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   containerOptions "-v ${params.refdir_N315}:/ref"
   publishDir params.out, mode:'copy'
 
@@ -135,7 +136,7 @@ process bwa_2 {
 
 process bwa_3 {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   containerOptions "-v ${params.refdir_CA12}:/ref"
   publishDir params.out, mode:'copy'
 
@@ -165,7 +166,7 @@ process bwa_3 {
 
 process mosdepth {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -189,7 +190,7 @@ process mosdepth {
 
 process spades {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -218,7 +219,7 @@ process spades {
 // Assemble comparison
 process quast_1 {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   containerOptions "-v ${params.refdir_8325}:/ref"
   publishDir params.out, mode:'copy'
 
@@ -246,7 +247,7 @@ process quast_1 {
 // Assemble comparison
 process quast_2 {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   containerOptions "-v ${params.refdir_N315}:/ref"
   publishDir params.out, mode:'copy'
 
@@ -273,7 +274,7 @@ process quast_2 {
 // Assemble comparison
 process quast_3 {
   cache 'lenient'
-  container 'laugoro/resistance-workshop-inmegen:public'
+  container 'laugoro/workshop-inmegen-assembly:public'
   containerOptions "-v ${params.refdir_CA12}:/ref"
   publishDir params.out, mode:'copy'
 
@@ -300,7 +301,8 @@ process quast_3 {
 
 process fastqc {
    cache 'lenient'
-  publishDir params.out, mode:'copy'
+   container 'laugoro/workshop-inmegen-assembly:public'
+   publishDir params.out, mode:'copy'
 
    input:
    tuple val(sample_id), path(reads0), path(reads1)

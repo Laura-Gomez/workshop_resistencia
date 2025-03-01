@@ -2,7 +2,7 @@
 
 process resfinder {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   containerOptions "-v ${params.db_res}:/resfinder_db"
   publishDir params.out, mode:'copy'
 
@@ -30,7 +30,7 @@ process resfinder {
 
 process resfinderfq {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   containerOptions "-v ${params.db_res}:/resfinder_db"
   publishDir params.out, mode:'copy'
 
@@ -58,7 +58,7 @@ process resfinderfq {
 
 process virulencefinder {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   containerOptions "-v ${params.db_vir}:/virfinder_db"
   publishDir params.out, mode:'copy'
 
@@ -90,7 +90,7 @@ process virulencefinder {
 
 process virulencefinderfq {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   containerOptions "-v ${params.db_vir}:/virfinder_db"
   publishDir params.out, mode:'copy'
 
@@ -123,7 +123,7 @@ process virulencefinderfq {
 
 process rgi {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -153,7 +153,7 @@ process rgi {
 // SCCMEC
 process sccmec {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -181,7 +181,7 @@ process sccmec {
 // GENE ANNOTATION
 process prokka {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   publishDir params.out, mode:'copy'
 
   input:
@@ -201,7 +201,7 @@ process prokka {
 // HIDDEN MARKOV MODELS SCAN
 process hmmscan {
   cache 'lenient'
-  container 'laugoro/resistance:public'
+  container 'laugoro/workshop-inmegen-resistance:public'
   containerOptions "-v ${params.resfam_dir}:/resfam"
   publishDir params.out, mode:'copy'
 
@@ -219,44 +219,4 @@ process hmmscan {
   """
 }
 
-// Quality analysis FASTQ
-
-process fastqc {
-   cache 'lenient'
-  publishDir params.out, mode:'copy'
-
-   input:
-   tuple val(sample_id), path(reads0), path(reads1)
-
-   output:
-   path("fastqc/*"),     emit: fastqc_out
-
-   script:
-   """
-   mkdir -p fastqc
-   fastqc -o fastqc ${reads0} ${reads1}
-   
-   """
-}
-
-
-// Multiqc: fastqc, fastp, quast
-process multiqc {
-   cache 'lenient'
-   publishDir params.out, mode:'copy'
-
-   input:
-   val(sample_id)
-   path(dir_all)
-
-   output:
-   path("multiqc/*"),     emit: multiqc_out
-
-   script:
-   """
-   mkdir -p multiqc
-   multiqc -o multiqc/ ${dir_all}
-
-   """
-}
 

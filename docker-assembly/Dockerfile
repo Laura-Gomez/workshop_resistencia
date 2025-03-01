@@ -55,6 +55,7 @@ RUN apt-get update && \
         pigz \
         pkg-config \
 	tar gzip bzip2 \
+	python3 \
         python3-dev python3-setuptools python3-pip python3-virtualenv \
         software-properties-common \
         tabix \
@@ -79,8 +80,8 @@ RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.
     rm fastqc_v0.12.1.zip
 
 #### Descargar e instalar MultiQC
-RUN pip3 install --upgrade numpy
-RUN pip3 install multiqc 
+#RUN pip install --upgrade numpy
+#RUN pip install multiqc 
 
 
 
